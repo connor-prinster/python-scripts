@@ -1,0 +1,36 @@
+main() {
+    A = array of 'k' arrays
+    split(A)
+}
+
+split(ArrayOfArrays A) {
+    if(only one array remaining in A)
+        return A
+    else {
+        split A evenly into ArrayOfArrays B and ArrayofArrays C
+        left = mergeLists(B)
+        right = mergeLists(c)
+        return merge(B, C)
+    }
+}
+
+merge(B, C) {
+    D = [];
+    while(B is not empty and C is not empty) {
+        if(B[0] > C[0]) {
+            D.append(C[0])
+            remove C[0] from C
+        }
+        else if(B[0] < C[0]) {
+            D.append(B[0])
+            remove B[0] from B
+        }
+    }
+    if(B is not empty) {
+        D.append(remaining values in B)
+    }
+    else if(C is not empty) {
+        D.append(remaining values in C)
+    }
+    return C;
+}
