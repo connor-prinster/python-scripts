@@ -37,3 +37,6 @@ if __name__== "__main__":
     a = [4, 2, 9, 1, 7]
     result = modifiedMergeSort(a, 0, len(a) - 1)
     print("Number of inversions:", result)
+
+
+    
