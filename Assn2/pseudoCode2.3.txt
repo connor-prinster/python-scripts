@@ -9,7 +9,7 @@ split(ArrayOfArrays A) {
     else {
         split A evenly into ArrayOfArrays B and ArrayofArrays C
         left = mergeLists(B)
-        right = mergeLists(c)
+        right = mergeLists(C)
         return merge(B, C)
     }
 }
@@ -32,5 +32,6 @@ merge(B, C) {
     else if(C is not empty) {
         D.append(remaining values in C)
     }
-    return C;
+    return D;
 }
+
