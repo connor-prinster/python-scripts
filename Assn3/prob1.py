@@ -1,5 +1,3 @@
-import math     
-
 def checkPeak(a, minimum, maximum, size):
     # base case
     if len(a) == 1:
@@ -24,17 +22,21 @@ def checkPeak(a, minimum, maximum, size):
         return checkPeak(a, (half + 1), maximum, size) 
 
 def findPeakInterim(a):
+    # I'll just find the length here, I like not passing things more than necessary
     length = len(a) 
+    # return the actual answer, this is just a wrapper function
     return checkPeak(a, 0, length - 1, length)
 
 
 if __name__== "__main__":
+    # test arrays
     a = [1, 4, 6, 8, 11, 12, 10, 9, 7]
     b = [1, 2, 5, 17, 4, 3]
     c = [1, 17, 5, 4, 3, 2]
     d = [1, 3, 5, 7, 9, 8, 6, 4]
     e = [1, 2, 3, 4, 5, 6, 7, 8, 10, 9]
 
+    # test drivers
     print(findPeakInterim(a), "is the peak")
     print(findPeakInterim(b), "is the peak")
     print(findPeakInterim(c), "is the peak")
