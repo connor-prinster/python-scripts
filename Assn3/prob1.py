@@ -21,10 +21,11 @@ def checkPeak(a, minimum, maximum, size):
     else:
         return checkPeak(a, (half + 1), maximum, size) 
 
+# wrapper function
 def findPeakInterim(a):
     # I'll just find the length here, I like not passing things more than necessary
     length = len(a) 
-    # return the actual answer, this is just a wrapper function
+    # return the actual answer
     return checkPeak(a, 0, length - 1, length)
 
 
