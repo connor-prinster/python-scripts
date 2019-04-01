@@ -1,53 +1,58 @@
-class tuple {
-  constructor(weight, value) {
-    this.weight = weight;
-    this.value = value;
-  }
+class KnapsackItem {
+    constructor(size, value) {
+        this.size = size;
+        this.value = value;
+    }
 }
 
-//need to watch for adding weights to be less than M
-//do not add values after adding weights
+class KnapsackValue {
+    constructor(fit, value) {
+        this.fit = fit;
+        this.value = value;
+    }
+}
 
 function main() {
-  let weightArr = [9, 7, 3, 2];
-  let valueArr = [7, 4, 2, 5];
-  let arr = [];
-  for (i = 0; i < weightArr.length; i++) {
-    arr.push(new tuple(weightArr[i], valueArr[i]));
-  }
-  let m = 14;
-  //   console.log(arr)
-  knapsack(arr, m);
+    let arr = [
+        new KnapsackItem(2, 7),
+        new KnapsackItem(7, 4),
+        new KnapsackItem(9, 2),
+        new KnapsackItem(3, 5)
+    ];
+    let m = 14;
+    knapsack(arr, m)
 }
 
 function knapsack(arr, m) {
-  // setting up A to hold all the fun stuff
-  let A = [];
-  // make sure that A contains a one in the first column
-  A.push(new tuple(1, 0));
-  // remainder of A must be 0s
-  for (let i = 1; i <= m; ++i) {
-    A.push(new tuple(0, 0));
-  }
-  for (let i = 0; i < arr.length; ++i) {
-    for (let j = m; j >= 1; --j) {
-      let val = 0;
-      if (j % arr[i].weight == 0) {
-        val = 1;
-      }
-      let ai = j - arr[i].weight;
-      if (ai >= 0) {
-        val = Math.max(val, A[j].weight, A[ai].weight);
-      } else {
-        val = Math.max(val, A[j].weight);
-      }
-      A[j] = new tuple(val, 0)//val;
+    let A = []
+    A.push(new KnapsackValue(1, 0))
+    for (let i = 1; i <= m; ++i) {
+        if (i == 2) {
+            console.log(new KnapsackValue(0, 0))
+        }
+        A.push(new KnapsackValue(0, 0));
     }
-    console.log(A);
-  }
-  if (A[A.length - 1].value != 0) {
-    console.log("YES");
-  } else {
-    console.log("NO");
-  }
+    for (let i = 0; i < arr.length; ++i) {
+        for (let j = m; j >= 1; --j) {
+            // let val = A[j];
+            if (j - arr[i].size >= 0) {
+                let lower = A[j - arr[i].size];
+                if (lower.fit == 1) {
+                    // val = Math.max(val.value, lower.value + val.value)
+                    A[j].value = Math.max(lower.value + arr[i].value, A[j].value);
+                    A[j].fit = 1;
+                }
+            }
+            else if (j == arr[i].size) {
+                A[j].value = arr[i].value;
+                A[j].fit = 1;
+            }
+        }
+        console.log(A);
+    }
+    let max = 0;
+    for (let i = 0; i < A.length; ++i) {
+        max = Math.max(max, A[i].value);
+    }
+    console.log(max);
 }
