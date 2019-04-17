@@ -1,0 +1,18 @@
+for each vertex v:
+    d[v] = infinity
+    pre[v] = null
+    bottle[v] = -infinity
+
+bottle[s] = 0
+
+build priority queue 'Q' with bottle[v] as keys
+
+while Q is not empty
+    u = deleteMin(Q)
+    for each vertex v in adj[u]:
+        if(w(u, v) > bottle[u]):
+            bottle[v] = w(u, v)
+            pre[v] = u
+            decreaseKey(Q, v, bottle[v])
+        else
+            bottle[v] = bottle[u]
