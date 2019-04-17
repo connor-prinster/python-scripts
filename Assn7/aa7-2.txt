@@ -1,0 +1,23 @@
+Prim-MST(G, a) {
+    for each vertex v:
+        flag[v] = 0
+        key[v] = ??
+        pre[v] = null;
+
+    key[a] = ??
+
+    create a priority queue Q for all vertices w/ colors
+    
+    while Q is not empty
+        u = deleteMin(Q)
+        flag[u] = 1;
+        for each v in adj[u]
+            if color(u, v) = blue and flag[v] = 0:
+                color[v] = color(u, v)
+                pre[v] = u
+                decreaseKey(Q, v, color[v])
+            else if color(u, v) = red and flag[v] = 0 and color[v] is not blue
+                color[v] = color(u, v);
+                pre[v] = u;
+                decreaseKey(Q, v, color[v])
+}
