@@ -11,7 +11,7 @@ class vertex {
     constructor(edges) {
         this.edges = edges;
         this.visited = false;
-        this.shortestPathToT = 0;
+        this.shortestPathFromS = 0;
         this.numShortestPaths = 0;
     }
 }
@@ -37,7 +37,7 @@ function numShortestPaths(start, end, graph) {
     queue[0].visited = true;
     /* mark that the shortest path to itself is
     '0' */
-    queue[0].shortestPathToT = 0;
+    queue[0].shortestPathFromS = 0;
     /* mark that there is currently only 1 defined path to itself */
     queue[0].numShortestPaths = 1;
     /* while the queue isn't empty */
@@ -54,17 +54,17 @@ function numShortestPaths(start, end, graph) {
                 /* if the next node from 'curNode' has a shortest path that's only one node longer than the one at 
                 'curNode', that means that there is another path of the same length that passes here. Basically the 
                 'n' vertex is a merging point of two paths of the same length */
-                if (n.shortestPathToT == curNode.shortestPathToT + 1) {
+                if (n.shortestPathFromS == curNode.shortestPathFromS + 1) {
                     /* the shortest path to 'n' is then increased by all shortest paths that passed through the 
                     past 'curNode' as a way of 'merging' the paths */
                     n.numShortestPaths += curNode.numShortestPaths;
                 }
-                else if (n.shortestPathToT > curNode.shortestPathToT) {
+                else if (n.shortestPathFromS > curNode.shortestPathFromS) {
                     /* if the shortest path to 't' of the next vertex  in the adjacency list is larger than one greater 
                     than that at 'curNode', we essentially override the previous shortest path with the new smaller 
                     one from 'curNode' and adding one to it. The paths from curNode also become the shortest paths for 
                     'n' */
-                    n.shortestPathToT = curNode.shortestPathToT + 1;
+                    n.shortestPathFromS = curNode.shortestPathFromS + 1;
                     n.numShortestPaths = curNode.numShortestPaths;
                 }
             }
@@ -74,7 +74,7 @@ function numShortestPaths(start, end, graph) {
                 n.visited = true;
                 /* the shortest path to 't' from the current node has increased by one at this node as we have moved
                 one vertex further from 't' */
-                n.shortestPathToT = curNode.shortestPathToT + 1;
+                n.shortestPathFromS = curNode.shortestPathFromS + 1;
                 /* the number of shortest paths here then equals the number of shortest paths from the previous vertex */
                 n.numShortestPaths = curNode.numShortestPaths;
                 /* push this node onto the queue */
