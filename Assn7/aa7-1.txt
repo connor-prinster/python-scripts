@@ -1,16 +1,46 @@
 
 
-for each vertex:
-    set bottleneck to 'infinity'
-    set the bottleneck of vertex 's' equal to '-infinity'
+for each vertex v in a graph 'G':
+    // set the bottleneck of all vertices equal to infinity
+    // as the overall goal is to find the smallest bottleneck
+    // and all values are smaller than infinity
+    set bottleneck[v] to 'infinity'
+    // there are no predecessors yet
+    set pre[v] equal to null
 
+// as the weight of any edge w(u, v) can be positive, negative
+// or zero, set the initial bottleneck equal to -infinity so 
+// if all weights are negative, a negative number can be chosen
+// as the smallest bottleneck
+set the bottleneck[s] equal to '-infinity'
+
+// self-explanatory. create the priority queue with
+// the bottleneck values as keys as we are looking not
+// for the shortest distance, but for the smallest 
+// bottleneck
 build a priority queue 'Q' with bottleneck values as keys
 
+// go until the queue is empty, signaling we've looked at all
+// vertices
 while 'Q' is not empty:
+    // grab the vertex at the front of the priority queue
     u = deleteMin(Q);
+    // check all edges adjacent to vertex 'v'
     for each 'v' in adj[u]
+        // a value bottleneck is equal to the largest value
+        // between the bottleneck held at 'u' and the weight
+        // of the edge we are examining. We just want the 
+        // largest value to be the bottleneck we compare
+        // to the bottleneck held at 'v'
         bottleneck = max(bottleneck[u], w(u, v));
+        // if the largest value held before 'v' is smaller
+        // than the bottleneck there, set the bottleneck at 
+        // 'v' equal to the smaller bottleneck value
         if bottleneck < bottleneck(v):
             bottleneck[v] = bottleneck;
+            // set the predecessor of 'v' to be 'u'
             pre[v] = u;
+            // decrease the key at 'v' in the priority queue
             decreaseKey(Q, v, bottleneck(v))
+
+
