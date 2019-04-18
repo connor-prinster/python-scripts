@@ -1,23 +1,51 @@
+
+//just a note, color: 0(blue), 1(red), 2(white)
+
 Prim-MST(G, a) {
-    for each vertex v:
+    // initialize all vertices in the graph G
+    for each vertex v in G:
+        // no vertex has been visited in G 
         flag[v] = 0
-        key[v] = ??
+        // we have not visited these vertices yet
+        key[v] = white
+        // there are no predecessors yet
         pre[v] = null;
 
-    key[a] = ??
+    // just by being the first vertex visited, there can be no red
+    // edges entering it, so we will classify it as blue.
+    key[a] = 'blue'
 
-    create a priority queue Q for all vertices w/ colors
+    // for prims, the queue is based on the weight of edges, 
+    // ours is based on color (from blue=0, red=1, white=2)
+    create a priority queue Q based on color
     
+    // Go until all vertices are out of the queue
     while Q is not empty
+        // let 'u' be the first vertex held in Q, or the
+        // vertex with the highest priority
         u = deleteMin(Q)
+        // mark this vertex as having been visited
         flag[u] = 1;
+        // for each vertex in u's adjacency list
         for each v in adj[u]
+            // if the color of the edge between 'u' and 'v' 
+            // is blue AND 'v' has not yet been visited,
+            // have the vertex be set to color of the 
+            // edge (blue), have the predecessor set to 'u',
+            // and decrease the key of 'v' in the 
+            // priority queue.
             if color(u, v) = blue and flag[v] = 0:
                 color[v] = color(u, v)
                 pre[v] = u
                 decreaseKey(Q, v, color[v])
+            // if the color of the edge between 'u' and 'v' is red, the vertex 
+            // has not been visited, and the color of that vertex is not blue
             else if color(u, v) = red and flag[v] = 0 and color[v] is not blue
+                // set the color of 'v' equal to the color of the edge leading
+                // from 'u' to 'v'
                 color[v] = color(u, v);
+                // set the predecessor of 'v' equal to 'u'
                 pre[v] = u;
+                // decrease the key in the priority queue.
                 decreaseKey(Q, v, color[v])
 }
