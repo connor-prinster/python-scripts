@@ -8,7 +8,7 @@ from pygame.locals import *
 
 FPS = 5
 WINDOWWIDTH = 640
-WINDOWHEIGHT = 480
+WINDOWHEIGHT = 640
 CELLSIZE = 20
 RADIUS = math.floor(CELLSIZE/2.5)
 assert WINDOWWIDTH % CELLSIZE == 0, "Window width must be a multiple of cell size."
@@ -64,6 +64,7 @@ def runGame():
 
     # Start the apple in a random place.
     apple = getRandomLocation()
+    apple2 = getRandomLocation()
 
     while True: # main game loop
         for event in pygame.event.get(): # event handling loop
@@ -88,10 +89,14 @@ def runGame():
             if wormBody['x'] == wormCoords[HEAD]['x'] and wormBody['y'] == wormCoords[HEAD]['y']:
                 return # game over
 
-        # check if worm has eaten an apply
+        # check if worm has eaten an apple
         if wormCoords[HEAD]['x'] == apple['x'] and wormCoords[HEAD]['y'] == apple['y']:
             # don't remove worm's tail segment
             apple = getRandomLocation() # set a new apple somewhere
+        if wormCoords[HEAD]['x'] == apple2['x'] and wormCoords[HEAD]['y'] == apple2['y']:
+            apple2 = getRandomLocation()
+            while apple['x'] == apple2['x'] and apple['y'] == apple2['y']:
+                apple2 = getRandomLocation()
         else:
             del wormCoords[-1] # remove worm's tail segment
 
@@ -108,7 +113,8 @@ def runGame():
         DISPLAYSURF.fill(BGCOLOR)
         drawGrid()
         drawWorm(wormCoords)
-        drawApple(apple)
+        drawApple(apple, RED)
+        drawApple(apple2, WHITE)
         drawScore(len(wormCoords) - 3)
         pygame.display.update()
         FPSCLOCK.tick(FPS)
@@ -209,14 +215,14 @@ def drawWorm(wormCoords):
         pygame.draw.rect(DISPLAYSURF, GREEN, wormInnerSegmentRect)
 
 
-def drawApple(coord):
+def drawApple(coord, color):
     x = coord['x'] * CELLSIZE
     y = coord['y'] * CELLSIZE
     xcenter = coord['x'] * CELLSIZE + math.floor(CELLSIZE/2)
     ycenter = coord['y'] * CELLSIZE+ math.floor(CELLSIZE/2)
     #appleRect = pygame.Rect(x, y, CELLSIZE, CELLSIZE)
     #pygame.draw.rect(DISPLAYSURF, RED, appleRect)
-    pygame.draw.circle(DISPLAYSURF, RED,(xcenter,ycenter),RADIUS)
+    pygame.draw.circle(DISPLAYSURF, color, (xcenter,ycenter), RADIUS)
 
 
 def drawGrid():
