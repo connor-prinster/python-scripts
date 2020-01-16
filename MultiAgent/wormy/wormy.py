@@ -17,12 +17,17 @@ CELLWIDTH = int(WINDOWWIDTH / CELLSIZE)
 CELLHEIGHT = int(WINDOWHEIGHT / CELLSIZE)
 
 #             R    G    B
-WHITE     = (255, 255, 255)
-BLACK     = (  0,   0,   0)
-RED       = (255,   0,   0)
-GREEN     = (  0, 255,   0)
-DARKGREEN = (  0, 155,   0)
-DARKGRAY  = ( 40,  40,  40)
+WHITE       = (255, 255, 255)
+BLACK       = (0,0,   0)
+RED         = (255,   0,   0)
+GREEN       = (0, 255,   0)
+DARKGREEN   = (0, 155,   0)
+DARKGRAY    = (40,  40,  40)
+VERMILLION  = (220, 73, 58)
+RAISINBLACK = (38, 38, 38)
+SEABLUE     = (0, 100, 148)
+HANSAYELLOW = (233, 215, 88)
+
 YELLOW = (255,255,0)
 BGCOLOR = BLACK
 
@@ -129,8 +134,8 @@ def checkForKeyPress():
 
 def showStartScreen():
     titleFont = pygame.font.Font('freesansbold.ttf', 100)
-    titleSurf1 = titleFont.render('USU', True, WHITE, DARKGREEN)
-    titleSurf2 = titleFont.render('Agents', True, GREEN)
+    titleSurf1 = titleFont.render('Noodles', True, HANSAYELLOW, VERMILLION)
+    titleSurf2 = titleFont.render('Danger', True, SEABLUE)
 
     degrees1 = 0
     degrees2 = 0
