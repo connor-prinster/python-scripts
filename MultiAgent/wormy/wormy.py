@@ -93,8 +93,9 @@ def runGame():
         if wormCoords[HEAD]['x'] == apple['x'] and wormCoords[HEAD]['y'] == apple['y']:
             # don't remove worm's tail segment
             apple = getRandomLocation() # set a new apple somewhere
-        if wormCoords[HEAD]['x'] == apple2['x'] and wormCoords[HEAD]['y'] == apple2['y']:
+        elif wormCoords[HEAD]['x'] == apple2['x'] and wormCoords[HEAD]['y'] == apple2['y']:
             apple2 = getRandomLocation()
+            # make sure that the two apples don't appear in the exact same place
             while apple['x'] == apple2['x'] and apple['y'] == apple2['y']:
                 apple2 = getRandomLocation()
         else:
