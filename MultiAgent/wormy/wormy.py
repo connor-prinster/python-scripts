@@ -6,7 +6,7 @@
 import random, pygame, sys,math
 from pygame.locals import *
 
-FPS = 10
+FPS = 2
 WINDOWWIDTH = 640
 WINDOWHEIGHT = 640
 CELLSIZE = 20
@@ -17,16 +17,20 @@ CELLWIDTH = int(WINDOWWIDTH / CELLSIZE)
 CELLHEIGHT = int(WINDOWHEIGHT / CELLSIZE)
 
 #             R    G    B
+# Apples
 WHITE       = (255, 255, 255)
-BLACK       = (0,0,   0)
 RED         = (255,   0,   0)
+# Background
+BLACK       = (0, 0, 0)
+DARKGRAY    = (40,  40,  40)
+# Worm One
 GREEN       = (0, 255,   0)
 DARKGREEN   = (0, 155,   0)
+# Worm Two
 TEAL        = (0, 191, 178)
 DARKTEAL    = (26, 94, 99)
-DARKGRAY    = (40,  40,  40)
+# Title Page
 VERMILLION  = (220, 73, 58)
-RAISINBLACK = (38, 38, 38)
 SEABLUE     = (0, 100, 148)
 HANSAYELLOW = (233, 215, 88)
 
@@ -162,7 +166,8 @@ def runGame():
         drawWorm(wormTwo['wormCoords'], DARKTEAL, TEAL)
         drawApple(apple, RED)
         drawApple(apple2, WHITE)
-        drawScore(len(wormOne['wormCoords']) - 3)
+        drawScore(len(wormOne['wormCoords']) - 3, len(wormTwo['wormCoords']) - 3)
+        # drawScore(len(wormTwo['wormCoords']) - 3)
         pygame.display.update()
         turn = turn + 1
         FPSCLOCK.tick(FPS)
@@ -272,12 +277,11 @@ def showGameOverScreen():
             pygame.event.get() # clear event queue
             return
 
-def drawScore(score):
-    scoreSurf = BASICFONT.render('Score: %s' % (score), True, WHITE)
+def drawScore(score, score1):
+    scoreSurf = BASICFONT.render('Score 1: %s | Score 2: %s' % (score, score1), True, WHITE)
     scoreRect = scoreSurf.get_rect()
-    scoreRect.topleft = (WINDOWWIDTH - 120, 10)
+    scoreRect.topleft = (WINDOWWIDTH - 210, 10)
     DISPLAYSURF.blit(scoreSurf, scoreRect)
-
 
 def drawWorm(wormCoords, colorOuter, colorInner):
     for coord in wormCoords:
