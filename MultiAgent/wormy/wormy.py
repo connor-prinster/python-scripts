@@ -54,13 +54,8 @@ def main():
 
 
 def runGame():
-    # Set a random start point.
-    startx = random.randint(5, CELLWIDTH - 6)
-    starty = random.randint(5, CELLHEIGHT - 6)
-    wormCoords = [{'x': startx,     'y': starty},
-                  {'x': startx - 1, 'y': starty},
-                  {'x': startx - 2, 'y': starty}]
-    direction = RIGHT
+
+    wormOne, wormTwo = startWorms()
 
     # Start the apple in a random place.
     apple = getRandomLocation()
@@ -71,52 +66,52 @@ def runGame():
             if event.type == QUIT:
                 terminate()
             elif event.type == KEYDOWN:
-                if (event.key == K_LEFT or event.key == K_a) and direction != RIGHT:
-                    direction = LEFT
-                elif (event.key == K_RIGHT or event.key == K_d) and direction != LEFT:
-                    direction = RIGHT
-                elif (event.key == K_UP or event.key == K_w) and direction != DOWN:
-                    direction = UP
-                elif (event.key == K_DOWN or event.key == K_s) and direction != UP:
-                    direction = DOWN
+                if (event.key == K_LEFT or event.key == K_a) and wormOne['direction'] != RIGHT:
+                    wormOne['direction'] = LEFT
+                elif (event.key == K_RIGHT or event.key == K_d) and wormOne['direction'] != LEFT:
+                    wormOne['direction'] = RIGHT
+                elif (event.key == K_UP or event.key == K_w) and wormOne['direction'] != DOWN:
+                    wormOne['direction'] = UP
+                elif (event.key == K_DOWN or event.key == K_s) and wormOne['direction'] != UP:
+                    wormOne['direction'] = DOWN
                 elif event.key == K_ESCAPE:
                     terminate()
 
         # check if the worm has hit itself or the edge
-        if wormCoords[HEAD]['x'] == -1 or wormCoords[HEAD]['x'] == CELLWIDTH or wormCoords[HEAD]['y'] == -1 or wormCoords[HEAD]['y'] == CELLHEIGHT:
+        if wormOne['wormCoords'][HEAD]['x'] == -1 or wormOne['wormCoords'][HEAD]['x'] == CELLWIDTH or wormOne['wormCoords'][HEAD]['y'] == -1 or wormOne['wormCoords'][HEAD]['y'] == CELLHEIGHT:
             return # game over
-        for wormBody in wormCoords[1:]:
-            if wormBody['x'] == wormCoords[HEAD]['x'] and wormBody['y'] == wormCoords[HEAD]['y']:
+        for wormBody in wormOne['wormCoords'][1:]:
+            if wormBody['x'] == wormOne['wormCoords'][HEAD]['x'] and wormBody['y'] == wormOne['wormCoords'][HEAD]['y']:
                 return # game over
 
         # check if worm has eaten an apple
-        if wormCoords[HEAD]['x'] == apple['x'] and wormCoords[HEAD]['y'] == apple['y']:
+        if wormOne['wormCoords'][HEAD]['x'] == apple['x'] and wormOne['wormCoords'][HEAD]['y'] == apple['y']:
             # don't remove worm's tail segment
             apple = getRandomLocation() # set a new apple somewhere
-        elif wormCoords[HEAD]['x'] == apple2['x'] and wormCoords[HEAD]['y'] == apple2['y']:
+        elif wormOne['wormCoords'][HEAD]['x'] == apple2['x'] and wormOne['wormCoords'][HEAD]['y'] == apple2['y']:
             apple2 = getRandomLocation()
             # make sure that the two apples don't appear in the exact same place
             while apple['x'] == apple2['x'] and apple['y'] == apple2['y']:
                 apple2 = getRandomLocation()
         else:
-            del wormCoords[-1] # remove worm's tail segment
+            del wormOne['wormCoords'][-1] # remove worm's tail segment
 
         # move the worm by adding a segment in the direction it is moving
-        if direction == UP:
-            newHead = {'x': wormCoords[HEAD]['x'], 'y': wormCoords[HEAD]['y'] - 1}
-        elif direction == DOWN:
-            newHead = {'x': wormCoords[HEAD]['x'], 'y': wormCoords[HEAD]['y'] + 1}
-        elif direction == LEFT:
-            newHead = {'x': wormCoords[HEAD]['x'] - 1, 'y': wormCoords[HEAD]['y']}
-        elif direction == RIGHT:
-            newHead = {'x': wormCoords[HEAD]['x'] + 1, 'y': wormCoords[HEAD]['y']}
-        wormCoords.insert(0, newHead)   #have already removed the last segment
+        if wormOne['direction'] == UP:
+            newHead = {'x': wormOne['wormCoords'][HEAD]['x'], 'y': wormOne['wormCoords'][HEAD]['y'] - 1}
+        elif wormOne['direction'] == DOWN:
+            newHead = {'x': wormOne['wormCoords'][HEAD]['x'], 'y': wormOne['wormCoords'][HEAD]['y'] + 1}
+        elif wormOne['direction'] == LEFT:
+            newHead = {'x': wormOne['wormCoords'][HEAD]['x'] - 1, 'y': wormOne['wormCoords'][HEAD]['y']}
+        elif wormOne['direction'] == RIGHT:
+            newHead = {'x': wormOne['wormCoords'][HEAD]['x'] + 1, 'y': wormOne['wormCoords'][HEAD]['y']}
+        wormOne['wormCoords'].insert(0, newHead)   #have already removed the last segment
         DISPLAYSURF.fill(BGCOLOR)
         drawGrid()
-        drawWorm(wormCoords)
+        drawWorm(wormOne['wormCoords'])
         drawApple(apple, RED)
         drawApple(apple2, WHITE)
-        drawScore(len(wormCoords) - 3)
+        drawScore(len(wormOne['wormCoords']) - 3)
         pygame.display.update()
         FPSCLOCK.tick(FPS)
 
@@ -126,6 +121,31 @@ def drawPressKeyMsg():
     pressKeyRect.topleft = (WINDOWWIDTH - 200, WINDOWHEIGHT - 30)
     DISPLAYSURF.blit(pressKeySurf, pressKeyRect)
 
+def startWorms():
+    wormOne = {}
+    wormOne['x'] = random.randint(5, CELLWIDTH - 6)
+    wormOne['y'] = random.randint(5, CELLHEIGHT - 6)
+    wormOne['wormCoords'] = [
+                {'x': wormOne['x'],     'y': wormOne['y']},
+                {'x': wormOne['x'] - 1, 'y': wormOne['y']},
+                {'x': wormOne['x'] - 2, 'y': wormOne['y']}
+                    ]
+    wormOne['direction'] = RIGHT
+
+    wormTwo = {}
+    wormTwo['x'] = random.randint(5, CELLWIDTH - 6)
+    wormTwo['y'] = random.randint(5, CELLHEIGHT - 6)
+    while wormOne['x'] == wormTwo['x'] and wormOne['y'] == wormTwo['y']:
+        wormTwo['x'] = random.randint(5, CELLWIDTH - 6)
+        wormTwo['y'] = random.randint(5, CELLHEIGHT - 6)
+    wormTwo['wormCoords'] = [
+                {'x': wormOne['x'],     'y': wormOne['y']},
+                {'x': wormOne['x'] - 1, 'y': wormOne['y']},
+                {'x': wormOne['x'] - 2, 'y': wormOne['y']}
+                    ]
+    wormTwo['direction'] = RIGHT
+
+    return wormOne, wormTwo
 
 def checkForKeyPress():
     if len(pygame.event.get(QUIT)) > 0:
