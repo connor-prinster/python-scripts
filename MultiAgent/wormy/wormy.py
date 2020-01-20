@@ -176,15 +176,11 @@ def runGame():
             for segment in wormOne['wormCoords']:
                 # laser one
                 for stone in stonePos:
-                    print("segment", segment)
-                    print("stone", stone)
                     if segment['x'] == stone['x'] and segment['y'] == stone['y']:
                         return
             for segment in wormTwo['wormCoords']:
                 # laser one
                 for stone in stonePos:
-                    print(segment)
-                    print(stone)
                     if segment['x'] == stone['x'] and segment['y'] == stone['y']:
                         return
 # ======================================= #
@@ -431,9 +427,9 @@ def splitSnake(worm, laser, hitCoords, stonePos):
     try:
         cutIdx = worm['wormCoords'][:cutIdx]
         newWormCoords = worm['wormCoords'].index(hitCoords)
-        # print("init worm: ", worm['wormCoords']) 
+        print("init worm: ", worm['wormCoords']) 
         worm['wormCoords'] = newWormCoords
-        # print("new worm: ", worm['wormCoords']) 
+        print("new worm: ", worm['wormCoords']) 
     except:
         # this is a small issue where if the head gets hit
         # the game falls about about 1/4 times
@@ -462,14 +458,14 @@ def splitSnake(worm, laser, hitCoords, stonePos):
 
 def drawStone(stones):
     for coords in stones:
-        # print("draw stones: ", stones)
         try:
             stoneOut = pygame.Rect(coords['x'] * CELLSIZE, coords['y'] * CELLSIZE, CELLSIZE, CELLSIZE)
             pygame.draw.rect(DISPLAYSURF, STONEOUTER, stoneOut)
             stoneIn = pygame.Rect((coords['x'] * CELLSIZE) + 4, (coords['y'] * CELLSIZE) + 4, CELLSIZE - 8, CELLSIZE - 8)
             pygame.draw.rect(DISPLAYSURF, STONEINNER, stoneIn)
         except:
-            print("something in drawStone()")
+            # some weird bug that happens in like 1/100 times
+            print("something in drawStone() went wrong")
 
 def drawGrid():
     for x in range(0, WINDOWWIDTH, CELLSIZE): # draw vertical lines
