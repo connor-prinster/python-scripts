@@ -6,7 +6,7 @@
 import random, pygame, sys,math
 from pygame.locals import *
 
-FPS = 2
+FPS = 10
 WINDOWWIDTH = 640
 WINDOWHEIGHT = 640
 CELLSIZE = 20
@@ -108,6 +108,18 @@ def runGame():
                 if wormBody['x'] == wormTwo['wormCoords'][HEAD]['x'] and wormBody['y'] == wormTwo['wormCoords'][HEAD]['y']:
                     return # game over
 # ================================ #
+
+# ====== CHECK IF SNAKES INTERSECT ====== #
+        if turn > 3:
+            longestWorm = wormOne
+            shortestWorm = wormTwo
+            if len(wormTwo) > len(wormOne):
+                longestWorm = wormTwo
+                shortestWorm = wormOne
+            for longSeg in longestWorm['wormCoords'][1:]:
+                for shortSeg in shortestWorm['wormCoords'][1:]:
+                    if longSeg['x'] == shortSeg['x'] and longSeg['y'] == shortSeg['y']:
+                        return # game over
 
 # ====== CHECK IF APPLES ARE EATEN ====== #
         # check if worm has eaten an apple
