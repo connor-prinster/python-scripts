@@ -30,6 +30,9 @@ LASERONE   = (255, 191, 0)
 INNERTWO    = (0, 191, 178)
 OUTERTWO    = (26, 94, 99)
 LASERTWO    = (137, 252, 0)
+# Stone
+STONEINNER = (208, 204, 208)
+STONEOUTER = (126, 137, 135)
 # Title Page
 VERMILLION  = (220, 73, 58)
 SEABLUE     = (0, 100, 148)
@@ -67,6 +70,7 @@ def runGame():
     laserOnePos = []
     twoShot = False
     laserTwoPos = []
+    stonePos = []
 
     wormOne, wormTwo = startWorms()
 
@@ -131,6 +135,20 @@ def runGame():
                 for shortSeg in shortestWorm['wormCoords'][1:]:
                     if longSeg['x'] == shortSeg['x'] and longSeg['y'] == shortSeg['y']:
                         return # game over
+            for segment in wormOne['wormCoords']:
+                for laser in laserOnePos:
+                    if segment['x'] == laser['x'] and segment['y'] == laser['y']:
+                        return
+                for laser in laserTwoPos:
+                    if segment['x'] == laser['x'] and segment['y'] == laser['y']:
+                        return
+            for segment in wormTwo['wormCoords']:
+                for laser in laserOnePos:
+                    if segment['x'] == laser['x'] and segment['y'] == laser['y']:
+                        return
+                for laser in laserTwoPos:
+                    if segment['x'] == laser['x'] and segment['y'] == laser['y']:
+                        return
 # ======================================= #
 
 # ====== CHECK IF APPLES ARE EATEN ====== #
@@ -202,12 +220,12 @@ def runGame():
 # ====== DRAW SCREEN ====== #
         DISPLAYSURF.fill(BGCOLOR)
         drawGrid()
-        drawWorm(wormOne['wormCoords'], OUTERONE, INNERONE)
-        drawWorm(wormTwo['wormCoords'], OUTERTWO, INNERTWO)
         laserOnePos = drawLaser(laserOnePos, LASERONE)
         oneShot = False
         laserTwoPos = drawLaser(laserTwoPos, LASERTWO)
         twoShot = False
+        drawWorm(wormOne['wormCoords'], OUTERONE, INNERONE)
+        drawWorm(wormTwo['wormCoords'], OUTERTWO, INNERTWO)
         drawApple(apple, RED)
         drawApple(apple2, RED)
         drawScore(len(wormOne['wormCoords']) - 3, len(wormTwo['wormCoords']) - 3)
@@ -370,6 +388,17 @@ def drawApple(coord, color):
     ycenter = coord['y'] * CELLSIZE+ math.floor(CELLSIZE/2)
     pygame.draw.circle(DISPLAYSURF, color, (xcenter,ycenter), RADIUS)
 
+def splitSnake(wormOne, wormTwo, lasers, stones):
+    oneIndex = -1
+    twoIndex = -1
+    result = True
+
+def drawStone(stones):
+    for coords in stones:
+        stoneOut = pygame.Rect(coords['x'], coords['y'], CELLSIZE, CELLSIZE)
+        pygame.draw.rect(DISPLAYSURF, STONEOUTER, stoneOut)
+        stoneIn = pygame.Rect(x + 4, y + 4, CELLSIZE - 8, CELLSIZE - 8)
+        pygame.draw.rect(DISPLAYSURF, STONEINNER, stoneIn)
 
 def drawGrid():
     for x in range(0, WINDOWWIDTH, CELLSIZE): # draw vertical lines
