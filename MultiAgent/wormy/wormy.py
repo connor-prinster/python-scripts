@@ -204,9 +204,9 @@ def runGame():
         drawGrid()
         drawWorm(wormOne['wormCoords'], OUTERONE, INNERONE)
         drawWorm(wormTwo['wormCoords'], OUTERTWO, INNERTWO)
-        drawLaser(laserOnePos, LASERONE)
+        laserOnePos = drawLaser(laserOnePos, LASERONE)
         oneShot = False
-        drawLaser(laserTwoPos, LASERTWO)
+        laserTwoPos = drawLaser(laserTwoPos, LASERTWO)
         twoShot = False
         drawApple(apple, RED)
         drawApple(apple2, RED)
@@ -337,12 +337,31 @@ def drawWorm(wormCoords, colorOuter, colorInner):
         pygame.draw.rect(DISPLAYSURF, colorInner, wormInnerSegmentRect)
     
 def drawLaser(coords, color):
+    newLaserPos = []
     for coord in coords:
-        x = coord['x'] * CELLSIZE
-        y = coord['y'] * CELLSIZE
+        adjustmentx = 0
+        adjustmenty = 0
+        directionish = coord['direction']
+        if(directionish == UP):
+            adjustmenty = -2
+        if(directionish == DOWN):
+            adjustmenty = 2
+        if(directionish == LEFT):
+            adjustmentx = -2
+        if(directionish == RIGHT):
+            adjustmentx = 2
+        
+        xish = (coord['x'] + adjustmentx)
+        yish = (coord['y'] + adjustmenty)
+        newPos = {'x': xish, 'y': yish, 'direction': directionish}
+        x = xish * CELLSIZE
+        y = yish * CELLSIZE 
         xcenter = coord['x'] * CELLSIZE + math.floor(CELLSIZE/2)
         ycenter = coord['y'] * CELLSIZE+ math.floor(CELLSIZE/2)
         pygame.draw.circle(DISPLAYSURF, color, (xcenter,ycenter), RADIUS)
+        if (xish <= -1 or xish >= CELLWIDTH or yish <= -1 or yish >= CELLHEIGHT) == False:
+            newLaserPos.insert(-1, newPos)
+    return newLaserPos
 
 def drawApple(coord, color):
     x = coord['x'] * CELLSIZE
