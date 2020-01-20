@@ -17,23 +17,25 @@ CELLWIDTH = int(WINDOWWIDTH / CELLSIZE)
 CELLHEIGHT = int(WINDOWHEIGHT / CELLSIZE)
 
 #             R    G    B
-# Apples
-WHITE       = (255, 255, 255)
+# Apple
 RED         = (255,   0,   0)
 # Background
 BLACK       = (0, 0, 0)
 DARKGRAY    = (40,  40,  40)
 # Worm One
-GREEN       = (0, 255,   0)
-DARKGREEN   = (0, 155,   0)
+INNERONE    = (0, 255,   0)
+OUTERONE    = (0, 155,   0)
+LASERONE   = (255, 191, 0)
 # Worm Two
-TEAL        = (0, 191, 178)
-DARKTEAL    = (26, 94, 99)
+INNERTWO    = (0, 191, 178)
+OUTERTWO    = (26, 94, 99)
+LASERTWO    = (137, 252, 0)
 # Title Page
 VERMILLION  = (220, 73, 58)
 SEABLUE     = (0, 100, 148)
 HANSAYELLOW = (233, 215, 88)
 
+WHITE  = (255, 255, 255)
 YELLOW = (255,255,0)
 BGCOLOR = BLACK
 
@@ -61,6 +63,10 @@ def main():
 
 def runGame():
     turn = 0
+    oneShot = False
+    laserOnePos = []
+    twoShot = False
+    laserTwoPos = []
 
     wormOne, wormTwo = startWorms()
 
@@ -81,6 +87,8 @@ def runGame():
                     wormOne['direction'] = UP
                 elif (event.key == K_DOWN) and wormOne['direction'] != UP:
                     wormOne['direction'] = DOWN
+                elif(event.key == K_RSHIFT):
+                    oneShot = True
                 elif (event.key == K_a) and wormTwo['direction'] != RIGHT:
                     wormTwo['direction'] = LEFT
                 elif (event.key == K_d) and wormTwo['direction'] != LEFT:
@@ -88,10 +96,13 @@ def runGame():
                 elif (event.key == K_w) and wormTwo['direction'] != DOWN:
                     wormTwo['direction'] = UP
                 elif (event.key == K_s) and wormTwo['direction'] != UP:
-                    wormTwo['direction'] = DOWN
+                    wormTwo['direction'] = DOWN  
+                elif (event.key == K_f):
+                    twoShot = True                  
                 elif event.key == K_ESCAPE:
                     terminate()
-                
+                    
+
 # ====== CHECK IF EDGE IS HIT ====== #
         # check if the worm has hit itself or the edge
         if turn > 3:
@@ -120,6 +131,7 @@ def runGame():
                 for shortSeg in shortestWorm['wormCoords'][1:]:
                     if longSeg['x'] == shortSeg['x'] and longSeg['y'] == shortSeg['y']:
                         return # game over
+# ======================================= #
 
 # ====== CHECK IF APPLES ARE EATEN ====== #
         # check if worm has eaten an apple
@@ -149,35 +161,55 @@ def runGame():
 
 # ====== MOVE WORMS ====== #
         # move the first worm by adding a segment in the direction it is moving
+        newPos = 0
         if wormOne['direction'] == UP:
             newHead = {'x': wormOne['wormCoords'][HEAD]['x'], 'y': wormOne['wormCoords'][HEAD]['y'] - 1}
+            newPos = {'x': wormOne['wormCoords'][HEAD]['x'], 'y': wormOne['wormCoords'][HEAD]['y'] - 2, 'direction': UP}
         elif wormOne['direction'] == DOWN:
             newHead = {'x': wormOne['wormCoords'][HEAD]['x'], 'y': wormOne['wormCoords'][HEAD]['y'] + 1}
+            newPos = {'x': wormOne['wormCoords'][HEAD]['x'], 'y': wormOne['wormCoords'][HEAD]['y'] + 2, 'direction': DOWN}
         elif wormOne['direction'] == LEFT:
             newHead = {'x': wormOne['wormCoords'][HEAD]['x'] - 1, 'y': wormOne['wormCoords'][HEAD]['y']}
+            newPos = {'x': wormOne['wormCoords'][HEAD]['x'] - 2, 'y': wormOne['wormCoords'][HEAD]['y'], 'direction': LEFT}
         elif wormOne['direction'] == RIGHT:
             newHead = {'x': wormOne['wormCoords'][HEAD]['x'] + 1, 'y': wormOne['wormCoords'][HEAD]['y']}
+            newPos = {'x': wormOne['wormCoords'][HEAD]['x'] + 2, 'y': wormOne['wormCoords'][HEAD]['y'], 'direction': RIGHT}
         wormOne['wormCoords'].insert(0, newHead)   #have already removed the last segment
+        if oneShot != False:
+            laserOnePos.insert(-1, newPos)
 
-        # move the second worm by adding a segment in the direction it is moving        
+
+        # move the second worm by adding a segment in the direction it is moving   
+        newPos = 0     
         if wormTwo['direction'] == UP:
-            newHead = {'x': wormTwo['wormCoords'][HEAD]['x'], 'y': wormTwo['wormCoords'][HEAD]['y'] - 1}
+            newHead = {'x': wormTwo['wormCoords'][HEAD]['x'], 'y': wormTwo['wormCoords'][HEAD]['y'] - 1, 'direction': UP}
+            newPos = {'x': wormTwo['wormCoords'][HEAD]['x'], 'y': wormTwo['wormCoords'][HEAD]['y'] - 2, 'direction': UP}
         elif wormTwo['direction'] == DOWN:
-            newHead = {'x': wormTwo['wormCoords'][HEAD]['x'], 'y': wormTwo['wormCoords'][HEAD]['y'] + 1}
+            newHead = {'x': wormTwo['wormCoords'][HEAD]['x'], 'y': wormTwo['wormCoords'][HEAD]['y'] + 1, 'direction': DOWN}
+            newPos = {'x': wormTwo['wormCoords'][HEAD]['x'], 'y': wormTwo['wormCoords'][HEAD]['y'] + 2, 'direction': DOWN}
         elif wormTwo['direction'] == LEFT:
-            newHead = {'x': wormTwo['wormCoords'][HEAD]['x'] - 1, 'y': wormTwo['wormCoords'][HEAD]['y']}
+            newHead = {'x': wormTwo['wormCoords'][HEAD]['x'] - 1, 'y': wormTwo['wormCoords'][HEAD]['y'], 'direction': LEFT}
+            newPos = {'x': wormTwo['wormCoords'][HEAD]['x'] - 2, 'y': wormTwo['wormCoords'][HEAD]['y'], 'direction': LEFT}
         elif wormTwo['direction'] == RIGHT:
-            newHead = {'x': wormTwo['wormCoords'][HEAD]['x'] + 1, 'y': wormTwo['wormCoords'][HEAD]['y']}
+            newHead = {'x': wormTwo['wormCoords'][HEAD]['x'] + 1, 'y': wormTwo['wormCoords'][HEAD]['y'], 'direction': RIGHT}
+            newPos = {'x': wormTwo['wormCoords'][HEAD]['x'] + 2, 'y': wormTwo['wormCoords'][HEAD]['y'], 'direction': RIGHT}
         wormTwo['wormCoords'].insert(0, newHead) 
+        if twoShot != False:
+            laserTwoPos.insert(-1, newPos)
 # ======================== #
+
 
 # ====== DRAW SCREEN ====== #
         DISPLAYSURF.fill(BGCOLOR)
         drawGrid()
-        drawWorm(wormOne['wormCoords'], DARKGREEN, GREEN)
-        drawWorm(wormTwo['wormCoords'], DARKTEAL, TEAL)
+        drawWorm(wormOne['wormCoords'], OUTERONE, INNERONE)
+        drawWorm(wormTwo['wormCoords'], OUTERTWO, INNERTWO)
+        drawLaser(laserOnePos, LASERONE)
+        oneShot = False
+        drawLaser(laserTwoPos, LASERTWO)
+        twoShot = False
         drawApple(apple, RED)
-        drawApple(apple2, WHITE)
+        drawApple(apple2, RED)
         drawScore(len(wormOne['wormCoords']) - 3, len(wormTwo['wormCoords']) - 3)
         # drawScore(len(wormTwo['wormCoords']) - 3)
         pygame.display.update()
@@ -303,15 +335,20 @@ def drawWorm(wormCoords, colorOuter, colorInner):
         pygame.draw.rect(DISPLAYSURF, colorOuter, wormSegmentRect)
         wormInnerSegmentRect = pygame.Rect(x + 4, y + 4, CELLSIZE - 8, CELLSIZE - 8)
         pygame.draw.rect(DISPLAYSURF, colorInner, wormInnerSegmentRect)
-
+    
+def drawLaser(coords, color):
+    for coord in coords:
+        x = coord['x'] * CELLSIZE
+        y = coord['y'] * CELLSIZE
+        xcenter = coord['x'] * CELLSIZE + math.floor(CELLSIZE/2)
+        ycenter = coord['y'] * CELLSIZE+ math.floor(CELLSIZE/2)
+        pygame.draw.circle(DISPLAYSURF, color, (xcenter,ycenter), RADIUS)
 
 def drawApple(coord, color):
     x = coord['x'] * CELLSIZE
     y = coord['y'] * CELLSIZE
     xcenter = coord['x'] * CELLSIZE + math.floor(CELLSIZE/2)
     ycenter = coord['y'] * CELLSIZE+ math.floor(CELLSIZE/2)
-    #appleRect = pygame.Rect(x, y, CELLSIZE, CELLSIZE)
-    #pygame.draw.rect(DISPLAYSURF, RED, appleRect)
     pygame.draw.circle(DISPLAYSURF, color, (xcenter,ycenter), RADIUS)
 
 
