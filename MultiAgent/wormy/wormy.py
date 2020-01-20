@@ -70,7 +70,7 @@ def runGame():
     laserOnePos = []
     twoShot = False
     laserTwoPos = []
-    stonePos = []
+    stonePos = [{'x': random.randint(5, CELLWIDTH - 6), 'y': random.randint(5, CELLWIDTH - 6)}]#[{'x': random.randint(100, 150) * CELLSIZE, 'y': random.randint(100, 150) * CELLSIZE}]
 
     wormOne, wormTwo = startWorms()
 
@@ -135,19 +135,57 @@ def runGame():
                 for shortSeg in shortestWorm['wormCoords'][1:]:
                     if longSeg['x'] == shortSeg['x'] and longSeg['y'] == shortSeg['y']:
                         return # game over
+            # === Check Laser Hit Worm One === #
             for segment in wormOne['wormCoords']:
+                # laser one
                 for laser in laserOnePos:
                     if segment['x'] == laser['x'] and segment['y'] == laser['y']:
-                        return
+                        hitCoords = {'x': segment['x'], 'y': segment['y']}
+                        wormOne, laserOnePos, stonePos, isDead = splitSnake(wormOne, laserOnePos, hitCoords, stonePos)
+                        if isDead == True:
+                            return
+                # laser two
                 for laser in laserTwoPos:
                     if segment['x'] == laser['x'] and segment['y'] == laser['y']:
+                        hitCoords = {'x': segment['x'], 'y': segment['y']}
+                        wormOne, laserTwoPos, stonePos, isDead = splitSnake(wormOne, laserOnePos, hitCoords, stonePos)
+                        if isDead == True:
+                            return
+            # === Check Laser Hit Worm Two === #
+            for segment in wormTwo['wormCoords']:
+                # laser one
+                for laser in laserOnePos:
+                    if segment['x'] == laser['x'] and segment['y'] == laser['y']:
+                        hitCoords = {'x': segment['x'], 'y': segment['y']}
+                        # splitSnake(wormTwo, laserOnePos, hitCoords, stonePos)
+                        # return
+                        wormTwo, laserOnePos, stonePos, isDead = splitSnake(wormOne, laserOnePos, hitCoords, stonePos)
+                        if isDead == True:
+                            return
+                # laser two
+                for laser in laserTwoPos:
+                    if segment['x'] == laser['x'] and segment['y'] == laser['y']:
+                        hitCoords = {'x': segment['x'], 'y': segment['y']}
+                        # splitSnake(wormTwo, laserTwoPos, hitCoords, stonePos)
+                        # return
+                        wormTwo, laserTwoPos, stonePos, isDead = splitSnake(wormOne, laserOnePos, hitCoords, stonePos)
+                        if isDead == True:
+                            return
+            
+            # === check if stone is hit === #
+            for segment in wormOne['wormCoords']:
+                # laser one
+                for stone in stonePos:
+                    print("segment", segment)
+                    print("stone", stone)
+                    if segment['x'] == stone['x'] and segment['y'] == stone['y']:
                         return
             for segment in wormTwo['wormCoords']:
-                for laser in laserOnePos:
-                    if segment['x'] == laser['x'] and segment['y'] == laser['y']:
-                        return
-                for laser in laserTwoPos:
-                    if segment['x'] == laser['x'] and segment['y'] == laser['y']:
+                # laser one
+                for stone in stonePos:
+                    print(segment)
+                    print(stone)
+                    if segment['x'] == stone['x'] and segment['y'] == stone['y']:
                         return
 # ======================================= #
 
@@ -200,22 +238,21 @@ def runGame():
         # move the second worm by adding a segment in the direction it is moving   
         newPos = 0     
         if wormTwo['direction'] == UP:
-            newHead = {'x': wormTwo['wormCoords'][HEAD]['x'], 'y': wormTwo['wormCoords'][HEAD]['y'] - 1, 'direction': UP}
+            newHead = {'x': wormTwo['wormCoords'][HEAD]['x'], 'y': wormTwo['wormCoords'][HEAD]['y'] - 1}
             newPos = {'x': wormTwo['wormCoords'][HEAD]['x'], 'y': wormTwo['wormCoords'][HEAD]['y'] - 2, 'direction': UP}
         elif wormTwo['direction'] == DOWN:
-            newHead = {'x': wormTwo['wormCoords'][HEAD]['x'], 'y': wormTwo['wormCoords'][HEAD]['y'] + 1, 'direction': DOWN}
+            newHead = {'x': wormTwo['wormCoords'][HEAD]['x'], 'y': wormTwo['wormCoords'][HEAD]['y'] + 1}
             newPos = {'x': wormTwo['wormCoords'][HEAD]['x'], 'y': wormTwo['wormCoords'][HEAD]['y'] + 2, 'direction': DOWN}
         elif wormTwo['direction'] == LEFT:
-            newHead = {'x': wormTwo['wormCoords'][HEAD]['x'] - 1, 'y': wormTwo['wormCoords'][HEAD]['y'], 'direction': LEFT}
+            newHead = {'x': wormTwo['wormCoords'][HEAD]['x'] - 1, 'y': wormTwo['wormCoords'][HEAD]['y']}
             newPos = {'x': wormTwo['wormCoords'][HEAD]['x'] - 2, 'y': wormTwo['wormCoords'][HEAD]['y'], 'direction': LEFT}
         elif wormTwo['direction'] == RIGHT:
-            newHead = {'x': wormTwo['wormCoords'][HEAD]['x'] + 1, 'y': wormTwo['wormCoords'][HEAD]['y'], 'direction': RIGHT}
+            newHead = {'x': wormTwo['wormCoords'][HEAD]['x'] + 1, 'y': wormTwo['wormCoords'][HEAD]['y']}
             newPos = {'x': wormTwo['wormCoords'][HEAD]['x'] + 2, 'y': wormTwo['wormCoords'][HEAD]['y'], 'direction': RIGHT}
         wormTwo['wormCoords'].insert(0, newHead) 
         if twoShot != False:
             laserTwoPos.insert(-1, newPos)
 # ======================== #
-
 
 # ====== DRAW SCREEN ====== #
         DISPLAYSURF.fill(BGCOLOR)
@@ -226,6 +263,7 @@ def runGame():
         twoShot = False
         drawWorm(wormOne['wormCoords'], OUTERONE, INNERONE)
         drawWorm(wormTwo['wormCoords'], OUTERTWO, INNERTWO)
+        drawStone(stonePos)
         drawApple(apple, RED)
         drawApple(apple2, RED)
         drawScore(len(wormOne['wormCoords']) - 3, len(wormTwo['wormCoords']) - 3)
@@ -388,17 +426,50 @@ def drawApple(coord, color):
     ycenter = coord['y'] * CELLSIZE+ math.floor(CELLSIZE/2)
     pygame.draw.circle(DISPLAYSURF, color, (xcenter,ycenter), RADIUS)
 
-def splitSnake(wormOne, wormTwo, lasers, stones):
-    oneIndex = -1
-    twoIndex = -1
-    result = True
+def splitSnake(worm, laser, hitCoords, stonePos):
+    # cut worm
+    try:
+        cutIdx = worm['wormCoords'][:cutIdx]
+        newWormCoords = worm['wormCoords'].index(hitCoords)
+        # print("init worm: ", worm['wormCoords']) 
+        worm['wormCoords'] = newWormCoords
+        # print("new worm: ", worm['wormCoords']) 
+    except:
+        # this is a small issue where if the head gets hit
+        # the game falls about about 1/4 times
+        return None, None, None, True
+
+    # turn worm into stone
+    newStoneCoords = worm['wormCoords'][cutIdx:]
+    for stone in newStoneCoords:
+        print("new stone: ", stone)
+        stonePos.append(-1, stone)
+        print("stone list: ", stonePos)
+        
+
+    # remove spent laser bolt
+    newLaser = []
+    for las in laser:
+        if las['x'] == hitCoords['x'] and las['y'] == hitCoords['y']:
+            newLaser.insert(las)
+    laser = newLaser
+
+    isDead = False
+    if len(worm['wormCoords']) < 3 or cutIdx == HEAD:
+        isDead = True
+
+    return worm, laser, stonePos, isDead
 
 def drawStone(stones):
     for coords in stones:
-        stoneOut = pygame.Rect(coords['x'], coords['y'], CELLSIZE, CELLSIZE)
-        pygame.draw.rect(DISPLAYSURF, STONEOUTER, stoneOut)
-        stoneIn = pygame.Rect(x + 4, y + 4, CELLSIZE - 8, CELLSIZE - 8)
-        pygame.draw.rect(DISPLAYSURF, STONEINNER, stoneIn)
+        # print("draw stones: ", stones)
+        try:
+            stoneOut = pygame.Rect(coords['x'] * CELLSIZE, coords['y'] * CELLSIZE, CELLSIZE, CELLSIZE)
+            pygame.draw.rect(DISPLAYSURF, STONEOUTER, stoneOut)
+            stoneIn = pygame.Rect((coords['x'] * CELLSIZE) + 4, (coords['y'] * CELLSIZE) + 4, CELLSIZE - 8, CELLSIZE - 8)
+            pygame.draw.rect(DISPLAYSURF, STONEINNER, stoneIn)
+        except:
+            print("something in drawStone()")
 
 def drawGrid():
     for x in range(0, WINDOWWIDTH, CELLSIZE): # draw vertical lines
