@@ -158,18 +158,14 @@ def runGame():
                 for laser in laserOnePos:
                     if segment['x'] == laser['x'] and segment['y'] == laser['y']:
                         hitCoords = {'x': segment['x'], 'y': segment['y']}
-                        # splitSnake(wormTwo, laserOnePos, hitCoords, stonePos)
-                        # return
-                        wormTwo, laserOnePos, stonePos, isDead = splitSnake(wormOne, laserOnePos, hitCoords, stonePos)
+                        wormTwo, laserOnePos, stonePos, isDead = splitSnake(wormTwo, laserOnePos, hitCoords, stonePos)
                         if isDead == True:
                             return
                 # laser two
                 for laser in laserTwoPos:
                     if segment['x'] == laser['x'] and segment['y'] == laser['y']:
                         hitCoords = {'x': segment['x'], 'y': segment['y']}
-                        # splitSnake(wormTwo, laserTwoPos, hitCoords, stonePos)
-                        # return
-                        wormTwo, laserTwoPos, stonePos, isDead = splitSnake(wormOne, laserOnePos, hitCoords, stonePos)
+                        wormTwo, laserTwoPos, stonePos, isDead = splitSnake(wormTwo, laserOnePos, hitCoords, stonePos)
                         if isDead == True:
                             return
             
@@ -293,11 +289,11 @@ def startWorms():
         wormTwo['x'] = random.randint(5, CELLWIDTH - 6)
         wormTwo['y'] = random.randint(5, CELLHEIGHT - 6)
     wormTwo['wormCoords'] = [
-                {'x': wormOne['x'],     'y': wormOne['y']},
-                {'x': wormOne['x'] - 1, 'y': wormOne['y']},
-                {'x': wormOne['x'] - 2, 'y': wormOne['y']}
+                {'x': wormTwo['x'],     'y': wormTwo['y']},
+                {'x': wormTwo['x'] - 1, 'y': wormTwo['y']},
+                {'x': wormTwo['x'] - 2, 'y': wormTwo['y']}
                     ]
-    wormTwo['direction'] = LEFT
+    wormTwo['direction'] = RIGHT
 
     return wormOne, wormTwo
 
@@ -452,7 +448,7 @@ def splitSnake(worm, laser, hitCoords, stonePos):
     
 
     isDead = False
-    if len(worm['wormCoords']) < 2 or cutIdx == HEAD:# or cutIdx == lastIdx:
+    if len(worm['wormCoords']) < 3 or cutIdx == HEAD:# or cutIdx == lastIdx:
         isDead = True
 
     return worm, laser, stonePos, isDead
