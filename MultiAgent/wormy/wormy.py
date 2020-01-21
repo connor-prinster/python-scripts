@@ -426,8 +426,8 @@ def splitSnake(worm, laser, hitCoords, stonePos):
 
     if hitCoords in worm['wormCoords']:
         cutIdx = worm['wormCoords'].index(hitCoords)
-        if cutIdx == -1:
-            cutIdx = len(worm) - 1
+        # if cutIdx == -1:
+        #     cutIdx = len(worm) - 1
         newWorm = worm['wormCoords'][:cutIdx]
         newStoneCoords = worm['wormCoords'][cutIdx:]
         print("init worm: ", worm['wormCoords'])
@@ -442,7 +442,7 @@ def splitSnake(worm, laser, hitCoords, stonePos):
         # remove spent laser bolt
         newLaser = []
         for las in laser:
-            if las['x'] == hitCoords['x'] and las['y'] == hitCoords['y']:
+            if not (las['x'] == hitCoords['x'] and las['y'] == hitCoords['y']):
                 newLaser.append(las)
         laser = newLaser    
     
