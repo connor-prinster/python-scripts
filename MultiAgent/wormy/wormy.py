@@ -6,7 +6,8 @@
 import random, pygame, sys,math
 from pygame.locals import *
 
-FPS = 10
+FPS = 5
+LASERSPEED = 4
 WINDOWWIDTH = 640
 WINDOWHEIGHT = 640
 CELLSIZE = 20
@@ -230,21 +231,20 @@ def runGame():
         if oneShot != False:
             laserOnePos.insert(-1, newPos)
 
-
         # move the second worm by adding a segment in the direction it is moving   
         newPos = 0     
         if wormTwo['direction'] == UP:
             newHead = {'x': wormTwo['wormCoords'][HEAD]['x'], 'y': wormTwo['wormCoords'][HEAD]['y'] - 1}
-            newPos = {'x': wormTwo['wormCoords'][HEAD]['x'], 'y': wormTwo['wormCoords'][HEAD]['y'] - 2, 'direction': UP}
+            newPos = {'x': wormTwo['wormCoords'][HEAD]['x'], 'y': wormTwo['wormCoords'][HEAD]['y'] - LASERSPEED, 'direction': UP}
         elif wormTwo['direction'] == DOWN:
             newHead = {'x': wormTwo['wormCoords'][HEAD]['x'], 'y': wormTwo['wormCoords'][HEAD]['y'] + 1}
-            newPos = {'x': wormTwo['wormCoords'][HEAD]['x'], 'y': wormTwo['wormCoords'][HEAD]['y'] + 2, 'direction': DOWN}
+            newPos = {'x': wormTwo['wormCoords'][HEAD]['x'], 'y': wormTwo['wormCoords'][HEAD]['y'] + LASERSPEED, 'direction': DOWN}
         elif wormTwo['direction'] == LEFT:
             newHead = {'x': wormTwo['wormCoords'][HEAD]['x'] - 1, 'y': wormTwo['wormCoords'][HEAD]['y']}
-            newPos = {'x': wormTwo['wormCoords'][HEAD]['x'] - 2, 'y': wormTwo['wormCoords'][HEAD]['y'], 'direction': LEFT}
+            newPos = {'x': wormTwo['wormCoords'][HEAD]['x'] - LASERSPEED, 'y': wormTwo['wormCoords'][HEAD]['y'], 'direction': LEFT}
         elif wormTwo['direction'] == RIGHT:
             newHead = {'x': wormTwo['wormCoords'][HEAD]['x'] + 1, 'y': wormTwo['wormCoords'][HEAD]['y']}
-            newPos = {'x': wormTwo['wormCoords'][HEAD]['x'] + 2, 'y': wormTwo['wormCoords'][HEAD]['y'], 'direction': RIGHT}
+            newPos = {'x': wormTwo['wormCoords'][HEAD]['x'] + LASERSPEED, 'y': wormTwo['wormCoords'][HEAD]['y'], 'direction': RIGHT}
         wormTwo['wormCoords'].insert(0, newHead) 
         if twoShot != False:
             laserTwoPos.insert(-1, newPos)
@@ -423,35 +423,36 @@ def drawApple(coord, color):
     pygame.draw.circle(DISPLAYSURF, color, (xcenter,ycenter), RADIUS)
 
 def splitSnake(worm, laser, hitCoords, stonePos):
-    # cut worm
-    try:
-        cutIdx = worm['wormCoords'][:cutIdx]
-        newWormCoords = worm['wormCoords'].index(hitCoords)
-        print("init worm: ", worm['wormCoords']) 
-        worm['wormCoords'] = newWormCoords
-        print("new worm: ", worm['wormCoords']) 
-    except:
-        # this is a small issue where if the head gets hit
-        # the game falls about about 1/4 times
-        return None, None, None, True
+    newWorm = []
+    newStoneCoords = []
+    cutIdx = None
+    lastIdx = len(worm['wormCoords']) - 1
 
-    # turn worm into stone
-    newStoneCoords = worm['wormCoords'][cutIdx:]
-    for stone in newStoneCoords:
-        print("new stone: ", stone)
-        stonePos.append(-1, stone)
-        print("stone list: ", stonePos)
-        
+    if hitCoords in worm['wormCoords']:
+        cutIdx = worm['wormCoords'].index(hitCoords)
+        if cutIdx == -1:
+            cutIdx = len(worm) - 1
+        newWorm = worm['wormCoords'][:cutIdx]
+        newStoneCoords = worm['wormCoords'][cutIdx:]
+        print("init worm: ", worm['wormCoords'])
+        worm['wormCoords'] = newWorm
+        print("new worm: ", worm['wormCoords'])
 
-    # remove spent laser bolt
-    newLaser = []
-    for las in laser:
-        if las['x'] == hitCoords['x'] and las['y'] == hitCoords['y']:
-            newLaser.insert(las)
-    laser = newLaser
+        for stone in newStoneCoords:
+            print("new stone: ", stone)
+            stonePos.append(stone)
+            print("stone list: ", stonePos)    
+
+        # remove spent laser bolt
+        newLaser = []
+        for las in laser:
+            if las['x'] == hitCoords['x'] and las['y'] == hitCoords['y']:
+                newLaser.append(las)
+        laser = newLaser    
+    
 
     isDead = False
-    if len(worm['wormCoords']) < 3 or cutIdx == HEAD:
+    if len(worm['wormCoords']) < 2 or cutIdx == HEAD:# or cutIdx == lastIdx:
         isDead = True
 
     return worm, laser, stonePos, isDead
