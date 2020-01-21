@@ -142,14 +142,14 @@ def runGame():
                 for laser in laserOnePos:
                     if segment['x'] == laser['x'] and segment['y'] == laser['y']:
                         hitCoords = {'x': segment['x'], 'y': segment['y']}
-                        wormOne, laserOnePos, stonePos, isDead = splitSnake(wormOne, laserOnePos, hitCoords, stonePos)
+                        wormOne, laserOnePos, stonePos, isDead = splitWorm(wormOne, laserOnePos, hitCoords, stonePos)
                         if isDead == True:
                             return
                 # laser two
                 for laser in laserTwoPos:
                     if segment['x'] == laser['x'] and segment['y'] == laser['y']:
                         hitCoords = {'x': segment['x'], 'y': segment['y']}
-                        wormOne, laserTwoPos, stonePos, isDead = splitSnake(wormOne, laserOnePos, hitCoords, stonePos)
+                        wormOne, laserTwoPos, stonePos, isDead = splitWorm(wormOne, laserOnePos, hitCoords, stonePos)
                         if isDead == True:
                             return
             # === Check Laser Hit Worm Two === #
@@ -158,14 +158,14 @@ def runGame():
                 for laser in laserOnePos:
                     if segment['x'] == laser['x'] and segment['y'] == laser['y']:
                         hitCoords = {'x': segment['x'], 'y': segment['y']}
-                        wormTwo, laserOnePos, stonePos, isDead = splitSnake(wormTwo, laserOnePos, hitCoords, stonePos)
+                        wormTwo, laserOnePos, stonePos, isDead = splitWorm(wormTwo, laserOnePos, hitCoords, stonePos)
                         if isDead == True:
                             return
                 # laser two
                 for laser in laserTwoPos:
                     if segment['x'] == laser['x'] and segment['y'] == laser['y']:
                         hitCoords = {'x': segment['x'], 'y': segment['y']}
-                        wormTwo, laserTwoPos, stonePos, isDead = splitSnake(wormTwo, laserOnePos, hitCoords, stonePos)
+                        wormTwo, laserTwoPos, stonePos, isDead = splitWorm(wormTwo, laserOnePos, hitCoords, stonePos)
                         if isDead == True:
                             return
             
@@ -259,7 +259,6 @@ def runGame():
         drawApple(apple, RED)
         drawApple(apple2, RED)
         drawScore(len(wormOne['wormCoords']) - 3, len(wormTwo['wormCoords']) - 3)
-        # drawScore(len(wormTwo['wormCoords']) - 3)
         pygame.display.update()
         turn = turn + 1
         FPSCLOCK.tick(FPS)
@@ -418,7 +417,7 @@ def drawApple(coord, color):
     ycenter = coord['y'] * CELLSIZE+ math.floor(CELLSIZE/2)
     pygame.draw.circle(DISPLAYSURF, color, (xcenter,ycenter), RADIUS)
 
-def splitSnake(worm, laser, hitCoords, stonePos):
+def splitWorm(worm, laser, hitCoords, stonePos):
     newWorm = []
     newStoneCoords = []
     cutIdx = None
@@ -430,14 +429,10 @@ def splitSnake(worm, laser, hitCoords, stonePos):
         #     cutIdx = len(worm) - 1
         newWorm = worm['wormCoords'][:cutIdx]
         newStoneCoords = worm['wormCoords'][cutIdx:]
-        print("init worm: ", worm['wormCoords'])
         worm['wormCoords'] = newWorm
-        print("new worm: ", worm['wormCoords'])
 
         for stone in newStoneCoords:
-            print("new stone: ", stone)
-            stonePos.append(stone)
-            print("stone list: ", stonePos)    
+            stonePos.append(stone)   
 
         # remove spent laser bolt
         newLaser = []
@@ -455,14 +450,11 @@ def splitSnake(worm, laser, hitCoords, stonePos):
 
 def drawStone(stones):
     for coords in stones:
-        try:
-            stoneOut = pygame.Rect(coords['x'] * CELLSIZE, coords['y'] * CELLSIZE, CELLSIZE, CELLSIZE)
-            pygame.draw.rect(DISPLAYSURF, STONEOUTER, stoneOut)
-            stoneIn = pygame.Rect((coords['x'] * CELLSIZE) + 4, (coords['y'] * CELLSIZE) + 4, CELLSIZE - 8, CELLSIZE - 8)
-            pygame.draw.rect(DISPLAYSURF, STONEINNER, stoneIn)
-        except:
-            # some weird bug that happens in like 1/100 times
-            print("something in drawStone() went wrong")
+        stoneOut = pygame.Rect(coords['x'] * CELLSIZE, coords['y'] * CELLSIZE, CELLSIZE, CELLSIZE)
+        pygame.draw.rect(DISPLAYSURF, STONEOUTER, stoneOut)
+        stoneIn = pygame.Rect((coords['x'] * CELLSIZE) + 4, (coords['y'] * CELLSIZE) + 4, CELLSIZE - 8, CELLSIZE - 8)
+        pygame.draw.rect(DISPLAYSURF, STONEINNER, stoneIn)
+
 
 def drawGrid():
     for x in range(0, WINDOWWIDTH, CELLSIZE): # draw vertical lines
