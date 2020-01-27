@@ -8,33 +8,28 @@ from pygame.locals import *
 
 from roomba import Roomba
 from enums.colors import Color
+from enums.consts import Consts
 
-FPS = 5
-WINDOWWIDTH = 640
-WINDOWHEIGHT = 480
-CELLSIZE = 20
-RADIUS = math.floor(CELLSIZE/2.5)
-assert WINDOWWIDTH % CELLSIZE == 0, "Window width must be a multiple of cell size."
-assert WINDOWHEIGHT % CELLSIZE == 0, "Window height must be a multiple of cell size."
-CELLWIDTH = int(WINDOWWIDTH / CELLSIZE)
-CELLHEIGHT = int(WINDOWHEIGHT / CELLSIZE)
+from obstacles.walls import Walls
+from obstacles.drops import DropOffs
+from obstacles.furniture import Furnitures
+from obstacles.dirts import Dirts, SuperDirt
+from obstacles.animal import Animal
 
-#             R    G    B
-WHITE     = (255, 255, 255)
-BLACK     = (  0,   0,   0)
-RED       = (255,   0,   0)
-GREEN     = (  0, 255,   0)
-DARKGREEN = (  0, 155,   0)
-DARKGRAY  = ( 40,  40,  40)
-YELLOW = (255,255,0)
-BGCOLOR = BLACK
+FPS = Consts.FPS.value
+WINDOWWIDTH = Consts.WINDOWWIDTH.value
+WINDOWHEIGHT = Consts.WINDOWHEIGHT.value
+CELLSIZE = Consts.CELLSIZE.value
+RADIUS = Consts.RADIUS.value
+CELLWIDTH = Consts.CELLWIDTH.value
+CELLHEIGHT = Consts.CELLHEIGHT.value
+AREA = Consts.AREA.value
 
-UP = 'up'
-DOWN = 'down'
-LEFT = 'left'
-RIGHT = 'right'
-
-HEAD = 0 # syntactic sugar: index of the worm's head
+walls = Walls().returnWall()
+dropOffs = DropOffs().returnDropOffs()
+dirts = Dirts().returnDirts()
+furnitures = Furnitures().returnFurnitures()
+superDirts = []
 
 def main():
     global FPSCLOCK, DISPLAYSURF, BASICFONT
@@ -47,77 +42,71 @@ def main():
 
     showStartScreen()
     while True:
-        runGame()
-        showGameOverScreen()
+        roombas = runGame()
+        showGameOverScreen(roombas)
 
 
 def runGame():
-    # Set a random start point.
-    startx = random.randint(5, CELLWIDTH - 6)
-    starty = random.randint(5, CELLHEIGHT - 6)
-    roomba1 = Roomba(startx, starty)
-    wormCoords = [{'x': startx,     'y': starty},
-                  {'x': startx - 1, 'y': starty},
-                  {'x': startx - 2, 'y': starty}]
-    direction = RIGHT
 
-    # Start the apple in a random place.
-    apple = getRandomLocation()
+    walls = Walls().returnWall()
+    dropOffs = DropOffs().returnDropOffs()
+    dirts = Dirts().returnDirts()
+    superDirts = generateSuperDirts()
 
-    while True: # main game loop
-        for event in pygame.event.get(): # event handling loop
+    roombas = generateRoombas(walls, dropOffs, dirts, superDirts, furnitures)
+    animals = generateAnimals(walls, dropOffs)
+    animal = Animal(2, 2, walls, dropOffs)
+
+    timeLeft = generateEstimatedTime(dirts, superDirts, roombas)
+
+    while True:
+        if timeLeft <= 0:
+            return roombas
+        # event handling loop
+        for event in pygame.event.get(): 
             if event.type == QUIT:
                 terminate()
             elif event.type == KEYDOWN:
-                if (event.key == K_LEFT or event.key == K_a) and direction != RIGHT:
-                    direction = LEFT
-                elif (event.key == K_RIGHT or event.key == K_d) and direction != LEFT:
-                    direction = RIGHT
-                elif (event.key == K_UP or event.key == K_w) and direction != DOWN:
-                    direction = UP
-                elif (event.key == K_DOWN or event.key == K_s) and direction != UP:
-                    direction = DOWN
-                elif event.key == K_ESCAPE:
+                if event.key == K_ESCAPE:
                     terminate()
 
-        # check if the worm has hit itself or the edge
-        if wormCoords[HEAD]['x'] == -1 or wormCoords[HEAD]['x'] == CELLWIDTH or wormCoords[HEAD]['y'] == -1 or wormCoords[HEAD]['y'] == CELLHEIGHT:
-            return # game over
-        for wormBody in wormCoords[1:]:
-            if wormBody['x'] == wormCoords[HEAD]['x'] and wormBody['y'] == wormCoords[HEAD]['y']:
-                return # game over
+        for roomba in roombas:
+            roomba.updateDirts(dirts, superDirts)
+            dirts, superDirts = roomba.moveForward()
+        for animal in animals:
+            animal.moveForward()
+        for roomba in roombas:
+            for animal in animals:
+                roomba, animal = animalVersusRoomba(roomba, animal)
+        
+        for roomba1 in roombas:
+            for roomba2 in roombas:
+                if roomba1.ids != roomba2.ids:
+                    roomba1.collision(roomba2)
+                    roomba2.collision(roomba1)
 
-        # check if worm has eaten an apply
-        if wormCoords[HEAD]['x'] == apple['x'] and wormCoords[HEAD]['y'] == apple['y']:
-            # don't remove worm's tail segment
-            apple = getRandomLocation() # set a new apple somewhere
-        else:
-            del wormCoords[-1] # remove worm's tail segment
-
-        # move the worm by adding a segment in the direction it is moving
-        if direction == UP:
-            newHead = {'x': wormCoords[HEAD]['x'], 'y': wormCoords[HEAD]['y'] - 1}
-        elif direction == DOWN:
-            newHead = {'x': wormCoords[HEAD]['x'], 'y': wormCoords[HEAD]['y'] + 1}
-        elif direction == LEFT:
-            newHead = {'x': wormCoords[HEAD]['x'] - 1, 'y': wormCoords[HEAD]['y']}
-        elif direction == RIGHT:
-            newHead = {'x': wormCoords[HEAD]['x'] + 1, 'y': wormCoords[HEAD]['y']}
-        wormCoords.insert(0, newHead)   #have already removed the last segment
-        DISPLAYSURF.fill(BGCOLOR)
+        DISPLAYSURF.fill(Color.GRID_INNER.value)
+        drawDirts(dirts, superDirts)
         drawGrid()
-        drawWorm(wormCoords)
-        drawApple(apple)
-        drawScore(len(wormCoords) - 3)
+        drawWalls()
+        drawDrops()
+        drawFurnitures()
+        
+        for roomba in roombas:
+            drawRoomba(roomba)
+        for animal in animals:
+            drawAnimal(animal)
+
+        timeLeft -= 1
+        drawScore(timeLeft)
         pygame.display.update()
         FPSCLOCK.tick(FPS)
 
 def drawPressKeyMsg():
-    pressKeySurf = BASICFONT.render('Press a key to play.', True, YELLOW)
+    pressKeySurf = BASICFONT.render('Press a key to run Roomba.', True, Color.YELLOW.value)
     pressKeyRect = pressKeySurf.get_rect()
     pressKeyRect.topleft = (WINDOWWIDTH - 200, WINDOWHEIGHT - 30)
     DISPLAYSURF.blit(pressKeySurf, pressKeyRect)
-
 
 def checkForKeyPress():
     if len(pygame.event.get(QUIT)) > 0:
@@ -133,13 +122,13 @@ def checkForKeyPress():
 
 def showStartScreen():
     titleFont = pygame.font.Font('freesansbold.ttf', 100)
-    titleSurf1 = titleFont.render('USU', True, WHITE, DARKGREEN)
-    titleSurf2 = titleFont.render('Agents', True, GREEN)
+    titleSurf1 = titleFont.render('Zoomies', True, Color.WHITE.value, Color.DARKGREEN.value)
+    titleSurf2 = titleFont.render('Roomie', True, Color.GREEN.value)
 
     degrees1 = 0
     degrees2 = 0
     while True:
-        DISPLAYSURF.fill(BGCOLOR)
+        DISPLAYSURF.fill(Color.BLACK.value)
         rotatedSurf1 = pygame.transform.rotate(titleSurf1, degrees1)
         rotatedRect1 = rotatedSurf1.get_rect()
         rotatedRect1.center = (math.floor(WINDOWWIDTH / 2), math.floor(WINDOWHEIGHT / 2))
@@ -155,6 +144,7 @@ def showStartScreen():
         if checkForKeyPress():
             pygame.event.get() # clear event queue
             return
+            
         pygame.display.update()
         FPSCLOCK.tick(FPS)
         degrees1 += 3 # rotate by 3 degrees each frame
@@ -170,10 +160,16 @@ def getRandomLocation():
     return {'x': random.randint(0, CELLWIDTH - 1), 'y': random.randint(0, CELLHEIGHT - 1)}
 
 
-def showGameOverScreen():
-    gameOverFont = pygame.font.Font('freesansbold.ttf', 150)
-    gameSurf = gameOverFont.render('Game', True, WHITE)
-    overSurf = gameOverFont.render('Over', True, WHITE)
+def showGameOverScreen(roombas):
+    ctr = 1
+    string = ""
+    total = 0
+    for roomba in roombas:
+        total += roomba.score
+
+    gameOverFont = pygame.font.Font('freesansbold.ttf', 100)
+    gameSurf = gameOverFont.render("Total Score:", True, Color.BLACK.value)
+    overSurf = gameOverFont.render(str(total), True, Color.BLACK.value)
     gameRect = gameSurf.get_rect()
     overRect = overSurf.get_rect()
     gameRect.midtop = (math.floor(WINDOWWIDTH / 2), 10)
@@ -191,38 +187,136 @@ def showGameOverScreen():
             pygame.event.get() # clear event queue
             return
 
-def drawScore(score):
-    scoreSurf = BASICFONT.render('Score: %s' % (score), True, WHITE)
+def drawScore(timeLeft):
+    scoreSurf = BASICFONT.render('Time Left: %s' % (timeLeft), True, Color.BLUE.value)
     scoreRect = scoreSurf.get_rect()
-    scoreRect.topleft = (WINDOWWIDTH - 120, 10)
+    scoreRect.topleft = (WINDOWWIDTH - 150, 10)
     DISPLAYSURF.blit(scoreSurf, scoreRect)
 
+def drawRoomba(roomba):
+    drawCharger(roomba.initX, roomba.initY)
 
-def drawWorm(wormCoords):
-    for coord in wormCoords:
-        x = coord['x'] * CELLSIZE
-        y = coord['y'] * CELLSIZE
-        wormSegmentRect = pygame.Rect(x, y, CELLSIZE, CELLSIZE)
-        pygame.draw.rect(DISPLAYSURF, Color.ROOMBA_OUTER.value, wormSegmentRect)
-        wormInnerSegmentRect = pygame.Rect(x + 4, y + 4, CELLSIZE - 8, CELLSIZE - 8)
-        pygame.draw.rect(DISPLAYSURF, Color.ROOMBA_INNER.value, wormInnerSegmentRect)
+    x = roomba.x * CELLSIZE
+    y = roomba.y * CELLSIZE
+    roombaInnerSegmentRect = pygame.Rect(x + 4, y + 4, CELLSIZE - 8, CELLSIZE - 8)
+    pygame.draw.rect(DISPLAYSURF, Color.ROOMBA_INNER.value, roombaInnerSegmentRect)
+    
+def drawAnimal(animal):
+    x = animal.x * CELLSIZE
+    y = animal.y * CELLSIZE
+    animalInnerSegmentRect = pygame.Rect(x + 4, y + 4, CELLSIZE - 8, CELLSIZE - 8)
+    pygame.draw.rect(DISPLAYSURF, Color.ANIMAL_INNER.value, animalInnerSegmentRect)
+    animalOuterSegmentRect = pygame.Rect(x, y, CELLSIZE, CELLSIZE)
+    pygame.draw.rect(DISPLAYSURF, Color.ANIMAL_OUTER.value, animalOuterSegmentRect)
 
+def drawCharger(passx, passy):
+    x = passx * CELLSIZE
+    y = passy * CELLSIZE
+    chargerSegmentRect = pygame.Rect(x, y, CELLSIZE, CELLSIZE)
+    pygame.draw.rect(DISPLAYSURF, Color.ROOMBA_CHARGER.value, chargerSegmentRect)
+
+def drawWalls():
+    for wall in walls:
+        x = wall.x * CELLSIZE
+        y = wall.y * CELLSIZE
+        wallSegmentRect = pygame.Rect(x, y, CELLSIZE, CELLSIZE)
+        pygame.draw.rect(DISPLAYSURF, Color.WALL.value, wallSegmentRect)
+
+def drawDrops():
+    for dropOff in dropOffs:
+        x = dropOff.x * CELLSIZE
+        y = dropOff.y * CELLSIZE
+        dropSegmentRect = pygame.Rect(x, y, CELLSIZE, CELLSIZE)
+        pygame.draw.rect(DISPLAYSURF, Color.DROP_OFF.value, dropSegmentRect)
 
 def drawApple(coord):
     x = coord['x'] * CELLSIZE
     y = coord['y'] * CELLSIZE
     xcenter = coord['x'] * CELLSIZE + math.floor(CELLSIZE/2)
     ycenter = coord['y'] * CELLSIZE+ math.floor(CELLSIZE/2)
-    #appleRect = pygame.Rect(x, y, CELLSIZE, CELLSIZE)
-    #pygame.draw.rect(DISPLAYSURF, RED, appleRect)
-    pygame.draw.circle(DISPLAYSURF, RED,(xcenter,ycenter),RADIUS)
+    pygame.draw.circle(DISPLAYSURF, Color.RED.value ,(xcenter,ycenter),RADIUS)
 
+def drawDirts(dirts, superDirts):
+    for dirt in dirts:
+        x = dirt.x * CELLSIZE
+        y = dirt.y * CELLSIZE
+        dirtSegmentRect = pygame.Rect(x, y, CELLSIZE, CELLSIZE)
+        pygame.draw.rect(DISPLAYSURF, Color.DIRT_LIGHT.value, dirtSegmentRect)
+
+    for superDirt in superDirts:
+        x = superDirt.x * CELLSIZE
+        y = superDirt.y * CELLSIZE
+        dirtSegmentRect = pygame.Rect(x + 4, y + 4, CELLSIZE - 8, CELLSIZE - 8)
+        pygame.draw.rect(DISPLAYSURF, Color.DIRT_DARK.value, dirtSegmentRect)
+
+def drawFurnitures():
+    for furniture in furnitures:
+        x = furniture.x * CELLSIZE
+        y = furniture.y * CELLSIZE
+        furnitureSegmentRect = pygame.Rect(x, y, CELLSIZE, CELLSIZE)
+        pygame.draw.rect(DISPLAYSURF, furniture.color, furnitureSegmentRect)
 
 def drawGrid():
     for x in range(0, WINDOWWIDTH, CELLSIZE): # draw vertical lines
-        pygame.draw.line(DISPLAYSURF, DARKGRAY, (x, 0), (x, WINDOWHEIGHT))
+        pygame.draw.line(DISPLAYSURF, Color.GRID_OUTER.value, (x, 0), (x, WINDOWHEIGHT))
     for y in range(0, WINDOWHEIGHT, CELLSIZE): # draw horizontal lines
-        pygame.draw.line(DISPLAYSURF, DARKGRAY, (0, y), (WINDOWWIDTH, y))
+        pygame.draw.line(DISPLAYSURF, Color.GRID_OUTER.value, (0, y), (WINDOWWIDTH, y))
+
+def generateSuperDirts():
+    superDirts = []
+
+    for i in range(CELLWIDTH):
+        for j in range(CELLHEIGHT):
+            rando = random.randint(0, 10)
+            if rando % 7 == 0:
+                superDirts.append(SuperDirt(i, j))
+    
+    return superDirts
+    
+def animalVersusRoomba(roomba, animal):
+    animalPos = animal.getPos()
+    roombaPos = roomba.getPos()
+
+    if animalPos['x'] == roombaPos['x'] and animalPos['y'] == roombaPos['y']:
+        roomba.decreaseHealth()
+        
+    return roomba, animal
+
+def generateRoombas(walls, dropOffs, dirts, superDirts, furnitures):
+    roombas = []
+    for i in range(Consts.NUM_ROOMBAS.value):
+        startx = random.randint(5, CELLWIDTH - 6)
+        starty = random.randint(5, CELLHEIGHT - 6)
+        roombas.append(
+            Roomba(
+                startx, starty, 
+                walls, dropOffs, 
+                dirts, superDirts, 
+                furnitures, AREA,
+                i
+            )
+        )
+
+    return roombas
+
+def generateAnimals(walls, dropOffs):
+    animals = []
+    for i in range(Consts.NUM_ANIMALS.value):
+        startx = random.randint(5, CELLWIDTH - 6)
+        starty = random.randint(5, CELLHEIGHT - 6)
+        animals.append(
+            Animal(startx, starty, walls, dropOffs)
+        )
+    return animals
+
+def generateEstimatedTime(dirts, superDirts, roombas):
+    timeLeft = 0
+    timeLeft += len(dirts)
+    timeLeft += (2 * len(superDirts))
+    if len(roombas) >= 1:
+        timeLeft /= (len(roombas) - 1)
+    return int(timeLeft)
+        
 
 
 if __name__ == '__main__':
